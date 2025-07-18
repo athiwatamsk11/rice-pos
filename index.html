@@ -1216,53 +1216,73 @@
             });
 
             // Mode switching
-            document.getElementById('userMode').addEventListener('click', () => switchMode('user'));
-            document.getElementById('adminMode').addEventListener('click', () => switchMode('admin'));
+            const userModeBtn = document.getElementById('userMode');
+            if (userModeBtn) userModeBtn.addEventListener('click', () => switchMode('user'));
+            const adminModeBtn = document.getElementById('adminMode');
+            if (adminModeBtn) adminModeBtn.addEventListener('click', () => switchMode('admin'));
 
             // Search and filters
-            document.getElementById('searchProduct').addEventListener('input', renderProducts);
-            document.getElementById('brandFilter').addEventListener('change', renderProducts);
-            document.getElementById('minPrice').addEventListener('input', renderProducts);
-            document.getElementById('maxPrice').addEventListener('input', renderProducts);
+            const searchProduct = document.getElementById('searchProduct');
+            if (searchProduct) searchProduct.addEventListener('input', renderProducts);
+            const brandFilter = document.getElementById('brandFilter');
+            if (brandFilter) brandFilter.addEventListener('change', renderProducts);
 
             // Modal handlers
-            document.getElementById('cancelLogin').addEventListener('click', () => hideModal('adminLoginModal'));
-            document.getElementById('confirmLogin').addEventListener('click', handleAdminLogin);
-            document.getElementById('adminPassword').addEventListener('keydown', function (e) {
+            const cancelLogin = document.getElementById('cancelLogin');
+            if (cancelLogin) cancelLogin.addEventListener('click', () => hideModal('adminLoginModal'));
+            const confirmLogin = document.getElementById('confirmLogin');
+            if (confirmLogin) confirmLogin.addEventListener('click', handleAdminLogin);
+            const adminPassword = document.getElementById('adminPassword');
+            if (adminPassword) adminPassword.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     handleAdminLogin();
                 }
             });
-            document.getElementById('addProductBtn').addEventListener('click', () => showAddProductModal());
-            document.getElementById('cancelProduct').addEventListener('click', () => hideModal('productModal'));
-            document.getElementById('saveProduct').addEventListener('click', handleSaveProduct);
+            const addProductBtn = document.getElementById('addProductBtn');
+            if (addProductBtn) addProductBtn.addEventListener('click', () => showAddProductModal());
+            const cancelProduct = document.getElementById('cancelProduct');
+            if (cancelProduct) cancelProduct.addEventListener('click', () => hideModal('productModal'));
+            const saveProduct = document.getElementById('saveProduct');
+            if (saveProduct) saveProduct.addEventListener('click', handleSaveProduct);
 
             // Product image upload
-            document.getElementById('productImage').addEventListener('change', handleImageUpload);
+            const productImage = document.getElementById('productImage');
+            if (productImage) productImage.addEventListener('change', handleImageUpload);
 
             // Checkout
-            document.getElementById('checkoutBtn').addEventListener('click', handleCheckout);
-            document.getElementById('cancelCheckout').addEventListener('click', () => hideModal('checkoutModal'));
-            document.getElementById('confirmCheckout').addEventListener('click', handleConfirmCheckout);
-            document.getElementById('receivedAmount').addEventListener('input', calculateChange);
-            document.getElementById('receivedAmount').addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    handleConfirmCheckout();
-                }
-            });
+            const checkoutBtn = document.getElementById('checkoutBtn');
+            if (checkoutBtn) checkoutBtn.addEventListener('click', handleCheckout);
+            const cancelCheckout = document.getElementById('cancelCheckout');
+            if (cancelCheckout) cancelCheckout.addEventListener('click', () => hideModal('checkoutModal'));
+            const confirmCheckout = document.getElementById('confirmCheckout');
+            if (confirmCheckout) confirmCheckout.addEventListener('click', handleConfirmCheckout);
+            const receivedAmount = document.getElementById('receivedAmount');
+            if (receivedAmount) {
+                receivedAmount.addEventListener('input', calculateChange);
+                receivedAmount.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        handleConfirmCheckout();
+                    }
+                });
+            }
 
             // Stock Modal
-            document.getElementById('cancelStock').addEventListener('click', () => hideModal('stockModal'));
-            document.getElementById('confirmStock').addEventListener('click', confirmStockUpdate);
-            document.getElementById('stockAmount').addEventListener('keydown', function (e) {
+            const cancelStock = document.getElementById('cancelStock');
+            if (cancelStock) cancelStock.addEventListener('click', () => hideModal('stockModal'));
+            const confirmStock = document.getElementById('confirmStock');
+            if (confirmStock) confirmStock.addEventListener('click', confirmStockUpdate);
+            const stockAmount = document.getElementById('stockAmount');
+            if (stockAmount) stockAmount.addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     confirmStockUpdate();
                 }
             });
 
             // Notification Bell
-            document.getElementById('notificationBell').addEventListener('click', showNotificationHistory);
-            document.getElementById('clearNotifications').addEventListener('click', clearNotificationHistory);
+            const notificationBell = document.getElementById('notificationBell');
+            if (notificationBell) notificationBell.addEventListener('click', showNotificationHistory);
+            const clearNotifications = document.getElementById('clearNotifications');
+            if (clearNotifications) clearNotifications.addEventListener('click', clearNotificationHistory);
 
             // Close modals when clicking outside
             document.querySelectorAll('.modal').forEach(modal => {
@@ -1274,17 +1294,21 @@
             });
 
             // ในแท็บประวัติการขาย (history tab) ให้เพิ่ม input เลือกวันที่และปุ่ม Print PDF
-            document.getElementById('historyStartDate').addEventListener('change', renderHistory);
-            document.getElementById('historyEndDate').addEventListener('change', renderHistory);
-            document.getElementById('printHistoryBtn').addEventListener('click', printHistoryPDF);
+            const historyStartDate = document.getElementById('historyStartDate');
+            if (historyStartDate) historyStartDate.addEventListener('change', renderHistory);
+            const historyEndDate = document.getElementById('historyEndDate');
+            if (historyEndDate) historyEndDate.addEventListener('change', renderHistory);
+            const printHistoryBtn = document.getElementById('printHistoryBtn');
+            if (printHistoryBtn) printHistoryBtn.addEventListener('click', printHistoryPDF);
 
             const topProductMonth = document.getElementById('topProductMonth');
-            const monthlySalesYear = document.getElementById('monthlySalesYear');
             if (topProductMonth) topProductMonth.addEventListener('change', renderReports);
+            const monthlySalesYear = document.getElementById('monthlySalesYear');
             if (monthlySalesYear) monthlySalesYear.addEventListener('change', renderReports);
 
             // ในแท็บประวัติการขาย (history tab) เพิ่มปุ่มล้างประวัติการขาย
-            document.getElementById('clearSalesHistoryBtn').addEventListener('click', clearSalesHistory);
+            const clearSalesHistoryBtn = document.getElementById('clearSalesHistoryBtn');
+            if (clearSalesHistoryBtn) clearSalesHistoryBtn.addEventListener('click', clearSalesHistory);
         }
 
         function switchTab(tabName) {
