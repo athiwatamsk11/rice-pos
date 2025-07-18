@@ -413,7 +413,7 @@
 
         .quantity:focus {
             border-color: #43a047;
-            box-shadow: 0 0 0 2px rgba(67,160,71,0.15);
+            box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15);
         }
 
         .cart-total {
@@ -783,6 +783,7 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -915,18 +916,8 @@
                     <label>ยี่ห้อ</label>
                     <select class="filter-input" id="brandFilter">
                         <option value="">ทั้งหมด</option>
-                        <option value="CP">ข้าวซีพี</option>
-                        <option value="Golden Phoenix">โกลเด้น ฟีนิกซ์</option>
-                        <option value="Royal Umbrella">รอยัล อัมเบรลล่า</option>
+                        <!-- ตัวเลือกยี่ห้อจะถูกเติมโดย JS -->
                     </select>
-                </div>
-                <div class="filter-group">
-                    <label>ราคาขั้นต่ำ</label>
-                    <input type="number" class="filter-input" id="minPrice" placeholder="0" min="0">
-                </div>
-                <div class="filter-group">
-                    <label>ราคาสูงสุด</label>
-                    <input type="number" class="filter-input" id="maxPrice" placeholder="999999" min="0">
                 </div>
             </div>
 
@@ -973,6 +964,7 @@
                 <label>ถึง</label>
                 <input type="date" id="historyEndDate">
                 <button class="btn btn-primary" id="printHistoryBtn">🖨️ พิมพ์ PDF</button>
+                <button class="btn btn-danger" id="clearSalesHistoryBtn">🗑️ ล้างประวัติการขาย</button>
             </div>
             <div id="historyListPrintArea">
                 <div id="historyList">
@@ -1086,7 +1078,8 @@
                 <label>สินค้า: <span id="stockProductName" style="font-weight: bold; color: #43a047;"></span></label>
             </div>
             <div class="form-group">
-                <label>Stock ปัจจุบัน: <span id="stockCurrentAmount" style="font-weight: bold; color: #333;"></span> ถุง</label>
+                <label>Stock ปัจจุบัน: <span id="stockCurrentAmount" style="font-weight: bold; color: #333;"></span>
+                    ถุง</label>
             </div>
             <div class="form-group">
                 <label>จำนวนที่ต้องการ <span id="stockActionText">เพิ่ม</span></label>
@@ -1235,7 +1228,7 @@
             // Modal handlers
             document.getElementById('cancelLogin').addEventListener('click', () => hideModal('adminLoginModal'));
             document.getElementById('confirmLogin').addEventListener('click', handleAdminLogin);
-            document.getElementById('adminPassword').addEventListener('keydown', function(e) {
+            document.getElementById('adminPassword').addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     handleAdminLogin();
                 }
@@ -1252,7 +1245,7 @@
             document.getElementById('cancelCheckout').addEventListener('click', () => hideModal('checkoutModal'));
             document.getElementById('confirmCheckout').addEventListener('click', handleConfirmCheckout);
             document.getElementById('receivedAmount').addEventListener('input', calculateChange);
-            document.getElementById('receivedAmount').addEventListener('keydown', function(e) {
+            document.getElementById('receivedAmount').addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     handleConfirmCheckout();
                 }
@@ -1261,7 +1254,7 @@
             // Stock Modal
             document.getElementById('cancelStock').addEventListener('click', () => hideModal('stockModal'));
             document.getElementById('confirmStock').addEventListener('click', confirmStockUpdate);
-            document.getElementById('stockAmount').addEventListener('keydown', function(e) {
+            document.getElementById('stockAmount').addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') {
                     confirmStockUpdate();
                 }
@@ -1289,6 +1282,9 @@
             const monthlySalesYear = document.getElementById('monthlySalesYear');
             if (topProductMonth) topProductMonth.addEventListener('change', renderReports);
             if (monthlySalesYear) monthlySalesYear.addEventListener('change', renderReports);
+
+            // ในแท็บประวัติการขาย (history tab) เพิ่มปุ่มล้างประวัติการขาย
+            document.getElementById('clearSalesHistoryBtn').addEventListener('click', clearSalesHistory);
         }
 
         function switchTab(tabName) {
@@ -1387,15 +1383,17 @@
             const grid = document.getElementById('productsGrid');
             const searchTerm = document.getElementById('searchProduct').value.toLowerCase();
             const brandFilter = document.getElementById('brandFilter').value;
-            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
-            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+            // เติม option ยี่ห้อแบบ dynamic
+            const brandSelect = document.getElementById('brandFilter');
+            const brands = Array.from(new Set(products.map(p => p.brand))).sort();
+            brandSelect.innerHTML = '<option value="">ทั้งหมด</option>' + brands.map(b => `<option value="${b}">${b}</option>`).join('');
+            brandSelect.value = brandFilter; // คงค่าที่เลือกไว้
 
             const filteredProducts = products.filter(product => {
                 const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
                     product.brand.toLowerCase().includes(searchTerm);
                 const matchesBrand = !brandFilter || product.brand === brandFilter;
-                const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
-                return matchesSearch && matchesBrand && matchesPrice;
+                return matchesSearch && matchesBrand;
             });
 
             grid.innerHTML = filteredProducts.map(product => {
@@ -1580,7 +1578,7 @@
                         </div>
                         <div class="quantity-controls">
                             <button class="quantity-btn" onclick="updateQuantity('${item.id}', -1)">-</button>
-                            <input type="number" class="quantity" min="1" max="${(products.find(p=>p.id===item.id)?.stock) ?? 1}" value="${item.quantity}" style="width:50px;text-align:center;" 
+                            <input type="number" class="quantity" min="1" max="${(products.find(p => p.id === item.id)?.stock) ?? 1}" value="${item.quantity}" style="width:50px;text-align:center;" 
                                 onchange="setCartQuantity('${item.id}', this.value)" 
                                 onblur="setCartQuantity('${item.id}', this.value)"
                                 onkeydown="if(event.key==='Enter'){setCartQuantity('${item.id}', this.value)}">
@@ -1605,14 +1603,14 @@
         function showStockModal(productId, action) {
             currentStockProductId = productId;
             currentStockAction = action;
-            
+
             const product = products.find(p => p.id === productId);
             const modalTitle = document.getElementById('stockModalTitle');
             const actionText = document.getElementById('stockActionText');
             const productName = document.getElementById('stockProductName');
             const currentAmount = document.getElementById('stockCurrentAmount');
             const amountInput = document.getElementById('stockAmount');
-            
+
             if (action === 'add') {
                 modalTitle.textContent = 'เพิ่ม Stock';
                 actionText.textContent = 'เพิ่ม';
@@ -1620,14 +1618,14 @@
                 modalTitle.textContent = 'ลด Stock';
                 actionText.textContent = 'ลด';
             }
-            
+
             // แสดงข้อมูลสินค้าและ Stock ปัจจุบัน
             productName.textContent = product.name;
             currentAmount.textContent = product.stock;
-            
+
             amountInput.value = '';
             showModal('stockModal');
-            
+
             // Focus ที่ input field อัตโนมัติ
             setTimeout(() => {
                 amountInput.focus();
@@ -1806,17 +1804,6 @@
 
         }
 
-        function deleteProduct(productId) {
-            if (confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?')) {
-                deleteProductFromFirestore(productId);
-                removeFromCart(productId); // Also remove from cart if it exists
-                renderProducts();
-                renderProductsManagement();
-                renderStockManagement();
-            }
-        }
-        window.deleteProduct = deleteProduct;
-
         function handleCheckout() {
             if (cart.length === 0) return;
 
@@ -1825,7 +1812,7 @@
             document.getElementById('receivedAmount').value = '';
             document.getElementById('changeAmount').value = '';
             showModal('checkoutModal');
-            
+
             // Focus ที่ input field อัตโนมัติ
             setTimeout(() => {
                 document.getElementById('receivedAmount').focus();
@@ -1874,7 +1861,7 @@
             hideModal('checkoutModal');
 
             alert(`ขายสำเร็จ!\nยอดรวม: ${total.toFixed(2)} บาท\nเงินทอน: ${(received - total).toFixed(2)} บาท`);
-            
+
             // ตรวจสอบ stock ต่ำหลังจากขาย
             checkLowStock();
         }
@@ -1908,8 +1895,13 @@
                 `;
                 return;
             }
-            // ใช้ slice().reverse() เพื่อไม่กระทบต้นฉบับ
-            historyList.innerHTML = filtered.slice().reverse().map(sale => `
+            // เรียงลำดับตามวันที่ล่าสุดอยู่บนสุด
+            filtered.sort((a, b) => {
+                const da = parseDateThai(a.date);
+                const db = parseDateThai(b.date);
+                return db - da;
+            });
+            historyList.innerHTML = filtered.map(sale => `
                 <div class="history-item">
                     <div class="history-header">
                         <span class="history-date">${sale.date}</span>
@@ -1925,7 +1917,7 @@
         function checkLowStock() {
             const lowStockThreshold = 10; // เกณฑ์ stock ต่ำ (น้อยกว่า 10 ถุง)
             const lowStockProducts = products.filter(p => p.stock < lowStockThreshold);
-            
+
             if (lowStockProducts.length > 0) {
                 showLowStockNotification(lowStockProducts);
             }
@@ -1942,7 +1934,7 @@
                 read: false
             };
             addNotificationToFirestore(notificationRecord);
-            
+
             const notification = document.createElement('div');
             notification.className = 'low-stock-notification';
             notification.innerHTML = `
@@ -1962,9 +1954,9 @@
                     </div>
                 </div>
             `;
-            
+
             document.body.appendChild(notification);
-            
+
             // ลบการแจ้งเตือนอัตโนมัติหลัง 10 วินาที
             setTimeout(() => {
                 if (notification.parentElement) {
@@ -1985,7 +1977,7 @@
 
         function showNotificationHistory() {
             const historyList = document.getElementById('notificationHistoryList');
-            
+
             if (notificationHistory.length === 0) {
                 historyList.innerHTML = `
                     <div class="empty-state">
@@ -2012,20 +2004,20 @@
                     </div>
                 `).join('');
             }
-            
+
             showModal('notificationHistoryModal');
         }
 
-        function clearNotificationHistory() {
-            if (confirm('คุณแน่ใจหรือไม่ที่จะล้างประวัติการแจ้งเตือนทั้งหมด?')) {
-                clearNotificationHistoryFirestore();
-                notificationHistory = [];
-                notificationCount = 0;
-                updateNotificationBell();
-                hideModal('notificationHistoryModal');
-                alert('ล้างประวัติการแจ้งเตือนเรียบร้อยแล้ว');
-            }
-        }
+        /* function clearNotificationHistory() {
+             if (confirm('คุณแน่ใจหรือไม่ที่จะล้างประวัติการแจ้งเตือนทั้งหมด?')) {
+             clearNotificationHistoryFirestore();
+                 notificationHistory = [];
+                 notificationCount = 0;
+                 updateNotificationBell();
+                 hideModal('notificationHistoryModal');
+                 alert('ล้างประวัติการแจ้งเตือนเรียบร้อยแล้ว');
+             }
+         }*/
 
         // เพิ่มฟังก์ชัน printHistoryPDF สำหรับพิมพ์/ดาวน์โหลด PDF
         function printHistoryPDF() {
@@ -2065,7 +2057,7 @@
             salesHistory.forEach(sale => {
                 const date = parseDateThai(sale.date);
                 if (isNaN(date.getTime())) return;
-                const month = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}`;
+                const month = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
                 const year = date.getFullYear();
                 monthSet.add(month);
                 yearSet.add(year);
@@ -2080,12 +2072,12 @@
                     return `<option value="${m}">${mo}/${y}</option>`;
                 }).join('');
                 // เลือกเดือนล่าสุดถ้ายังไม่ได้เลือก
-                if (!topProductMonth.value && months.length > 0) topProductMonth.value = months[months.length-1];
+                if (!topProductMonth.value && months.length > 0) topProductMonth.value = months[months.length - 1];
             }
             if (monthlySalesYear) {
                 monthlySalesYear.innerHTML = years.map(y => `<option value="${y}">${y}</option>`).join('');
                 // เลือกปีล่าสุดถ้ายังไม่ได้เลือก
-                if (!monthlySalesYear.value && years.length > 0) monthlySalesYear.value = years[years.length-1];
+                if (!monthlySalesYear.value && years.length > 0) monthlySalesYear.value = years[years.length - 1];
             }
 
             // ====== กราฟ Top Product รายเดือน (Top 10) ======
@@ -2094,7 +2086,7 @@
             salesHistory.forEach(sale => {
                 const date = parseDateThai(sale.date);
                 if (isNaN(date.getTime())) return;
-                const month = `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}`;
+                const month = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
                 if (selectedMonth && month !== selectedMonth) return;
                 sale.items.forEach(item => {
                     if (!productMap[item.name]) productMap[item.name] = 0;
@@ -2103,11 +2095,11 @@
             });
             // Top 10
             const topProductsArr = Object.entries(productMap)
-                .map(([name, qty]) => ({name, qty}))
-                .sort((a,b)=>b.qty-a.qty)
-                .slice(0,10);
-            const topProductLabels = topProductsArr.map(p=>p.name);
-            const topProductData = topProductsArr.map(p=>p.qty);
+                .map(([name, qty]) => ({ name, qty }))
+                .sort((a, b) => b.qty - a.qty)
+                .slice(0, 10);
+            const topProductLabels = topProductsArr.map(p => p.name);
+            const topProductData = topProductsArr.map(p => p.qty);
             if (topProductChartInstance) topProductChartInstance.destroy();
             const ctx1 = document.getElementById('topProductChart').getContext('2d');
             topProductChartInstance = new Chart(ctx1, {
@@ -2117,8 +2109,8 @@
                     datasets: [{
                         label: 'จำนวนที่ขาย (ถุง)',
                         data: topProductData,
-                        backgroundColor: topProductLabels.map((_,i)=>`hsl(${i*36},70%,60%)`),
-                        borderColor: topProductLabels.map((_,i)=>`hsl(${i*36},70%,40%)`),
+                        backgroundColor: topProductLabels.map((_, i) => `hsl(${i * 36},70%,60%)`),
+                        borderColor: topProductLabels.map((_, i) => `hsl(${i * 36},70%,40%)`),
                         borderWidth: 1
                     }]
                 },
@@ -2141,22 +2133,22 @@
                 const date = parseDateThai(sale.date);
                 if (isNaN(date.getTime())) return;
                 const year = date.getFullYear();
-                const month = date.getMonth()+1;
+                const month = date.getMonth() + 1;
                 if (selectedYear && year !== selectedYear) return;
-                const monthLabel = `${year}-${month.toString().padStart(2,'0')}`;
+                const monthLabel = `${year}-${month.toString().padStart(2, '0')}`;
                 if (!monthlySalesMap[monthLabel]) monthlySalesMap[monthLabel] = 0;
                 monthlySalesMap[monthLabel] += sale.total;
             });
             // สร้าง labels 12 เดือนของปีที่เลือก
-            const monthlyLabels = Array.from({length:12},(_,i)=>`${selectedYear}-${(i+1).toString().padStart(2,'0')}`);
+            const monthlyLabels = Array.from({ length: 12 }, (_, i) => `${selectedYear}-${(i + 1).toString().padStart(2, '0')}`);
             const monthlyData = monthlyLabels.map(m => monthlySalesMap[m] || 0);
             if (monthlySalesChartInstance) monthlySalesChartInstance.destroy();
             const ctx2 = document.getElementById('monthlySalesChart').getContext('2d');
             monthlySalesChartInstance = new Chart(ctx2, {
                 type: 'line',
                 data: {
-                    labels: monthlyLabels.map(m=>{
-                        const [y,mo]=m.split('-');
+                    labels: monthlyLabels.map(m => {
+                        const [y, mo] = m.split('-');
                         return `${mo}/${y}`;
                     }),
                     datasets: [{
@@ -2237,6 +2229,76 @@
             updateCart();
         }
         window.setCartQuantity = setCartQuantity;
+
+        // เพิ่มฟังก์ชัน clearSalesHistory
+        async function clearSalesHistory() {
+            const btn = document.getElementById('clearSalesHistoryBtn');
+            if (!confirm('คุณแน่ใจหรือไม่ที่จะล้างประวัติการขายทั้งหมด?')) return;
+            btn.disabled = true;
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner" style="margin-right:8px;width:18px;height:18px;vertical-align:middle;"></span>กำลังลบ...';
+            // Spinner CSS (ถ้ายังไม่มี)
+            if (!document.getElementById('spinner-style')) {
+                const style = document.createElement('style');
+                style.id = 'spinner-style';
+                style.innerHTML = `.spinner {border: 3px solid #e0e0e0; border-top: 3px solid #f44336; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display:inline-block; vertical-align:middle;} @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}`;
+                document.head.appendChild(style);
+            }
+            // ลบทุก doc ใน salesHistory (Firestore)
+            const querySnapshot = await getDocs(collection(db, 'salesHistory'));
+            for (const docSnap of querySnapshot.docs) {
+                await deleteDoc(doc(db, 'salesHistory', docSnap.id));
+            }
+            salesHistory = [];
+            renderHistory();
+            renderReports();
+            btn.disabled = false;
+            btn.innerHTML = oldText;
+            alert('ล้างประวัติการขายเรียบร้อยแล้ว');
+        }
+
+        // --- Spinner CSS (ถ้ายังไม่มี) ---
+        if (!document.getElementById('spinner-style')) {
+            const style = document.createElement('style');
+            style.id = 'spinner-style';
+            style.innerHTML = `.spinner {border: 3px solid #e0e0e0; border-top: 3px solid #f44336; border-radius: 50%; width: 18px; height: 18px; animation: spin 1s linear infinite; display:inline-block; vertical-align:middle;} @keyframes spin {0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}`;
+            document.head.appendChild(style);
+        }
+        // --- clearNotificationHistory ---
+        async function clearNotificationHistory() {
+            const btn = document.getElementById('clearNotifications');
+            if (!confirm('คุณแน่ใจหรือไม่ที่จะล้างประวัติการแจ้งเตือนทั้งหมด?')) return;
+            btn.disabled = true;
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner" style="margin-right:8px;width:18px;height:18px;vertical-align:middle;"></span>กำลังลบ...';
+            await clearNotificationHistoryFirestore();
+            notificationHistory = [];
+            notificationCount = 0;
+            updateNotificationBell();
+            hideModal('notificationHistoryModal');
+            btn.disabled = false;
+            btn.innerHTML = oldText;
+            alert('ล้างประวัติการแจ้งเตือนเรียบร้อยแล้ว');
+        }
+        // --- deleteProduct ---
+        async function deleteProduct(productId, btnEl) {
+            if (!confirm('คุณแน่ใจหรือไม่ที่จะลบสินค้านี้?')) return;
+            if (btnEl) {
+                btnEl.disabled = true;
+                const oldText = btnEl.innerHTML;
+                btnEl.innerHTML = '<span class="spinner" style="margin-right:8px;width:18px;height:18px;vertical-align:middle;"></span>กำลังลบ...';
+                await deleteProductFromFirestore(productId);
+                btnEl.disabled = false;
+                btnEl.innerHTML = oldText;
+            } else {
+                await deleteProductFromFirestore(productId);
+            }
+            removeFromCart(productId);
+            renderProducts();
+            renderProductsManagement();
+            renderStockManagement();
+        }
+        window.deleteProduct = deleteProduct;
     </script>
 </body>
 
